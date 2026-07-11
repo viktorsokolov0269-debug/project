@@ -1,40 +1,33 @@
 # Сопоставление ОЭ и ОР (1С ERP × 1С ТОИР)
 
-## Открыть на GitHub (постоянная ссылка)
+## Скачать и открыть
 
-Сделайте 2 настройки в репозитории — подробная инструкция: **[GITHUB-PAGES.md](GITHUB-PAGES.md)**
+Скачайте файл и откройте двойным щелчком в браузере:
 
-1. **Settings → Danger Zone → Change visibility → Public**
-2. **Settings → Pages → Source: GitHub Actions** (или branch `main` / папка `/docs`)
+### ➡️ [Сопоставление_ОЭ_ОР.html](Сопоставление_ОЭ_ОР.html)
 
-После этого ссылка:
+То же самое: [oe-or-matcher.html](oe-or-matcher.html)
 
-### ➡️ https://viktorsokolov0269-debug.github.io/project/
+1. Скачать HTML  
+2. Открыть в Chrome / Edge / Firefox  
+3. Загрузить Excel ОЭ и Excel ОР  
+4. Сопоставить и сохранить в Excel / JSON  
 
----
+Интернет нужен только для шрифтов; Excel-библиотека уже внутри файла.
 
-## Как пользоваться
-
-1. Откройте ссылку  
-2. Загрузите Excel с **ОЭ** (код + наименование)  
-3. Загрузите Excel с **ОР** (код + наименование)  
-4. Для каждой строки ОЭ найдите ОР через поиск  
-5. Сохраните результат кнопками **Excel** или **JSON**
-
-Примеры: [`sample-data/oe_sample.xlsx`](sample-data/oe_sample.xlsx), [`sample-data/or_sample.xlsx`](sample-data/or_sample.xlsx)
-
-## Запуск на компьютере
-
-```bash
-./start.sh
-```
-
-Windows: `start.bat` → откроется http://localhost:4173
+Примеры данных: [`sample-data/oe_sample.xlsx`](sample-data/oe_sample.xlsx), [`sample-data/or_sample.xlsx`](sample-data/or_sample.xlsx)
 
 ## Возможности
 
-- Загрузка Excel ОЭ и ОР  
-- Поиск ОР по коду и наименованию  
-- Фильтры и проверка дубликатов  
-- Экспорт в Excel / JSON (4 столбца)  
+- Загрузка Excel ОЭ и ОР (код + наименование)  
+- Поиск ОР в выпадающем списке  
+- Проверка дубликатов  
+- Экспорт в Excel и JSON (4 столбца)  
 - Автосохранение прогресса в браузере  
+
+## Разработка (необязательно)
+
+```bash
+npm install
+npm run dev
+```
