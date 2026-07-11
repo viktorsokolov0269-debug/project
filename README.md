@@ -1,41 +1,40 @@
 # Сопоставление ОЭ и ОР (1С ERP × 1С ТОИР)
 
-## Открыть приложение — нажмите ссылку
+## Открыть на GitHub (постоянная ссылка)
 
-### ➡️ https://instructor-thereof-incomplete-surely.trycloudflare.com
+Сделайте 2 настройки в репозитории — подробная инструкция: **[GITHUB-PAGES.md](GITHUB-PAGES.md)**
 
-Просто откройте ссылку в браузере. Установка не нужна.
+1. **Settings → Danger Zone → Change visibility → Public**
+2. **Settings → Pages → Source: GitHub Actions** (или branch `main` / папка `/docs`)
 
-Запасная ссылка (пароль: `My-Drop-Site`):  
-https://spectacular-bienenstitch-91fdaa.netlify.app
+После этого ссылка:
+
+### ➡️ https://viktorsokolov0269-debug.github.io/project/
 
 ---
 
 ## Как пользоваться
 
-1. Откройте ссылку выше  
+1. Откройте ссылку  
 2. Загрузите Excel с **ОЭ** (код + наименование)  
 3. Загрузите Excel с **ОР** (код + наименование)  
-4. Для каждой строки ОЭ найдите ОР через поиск в списке  
-5. Нажмите **Excel** или **JSON**, чтобы сохранить результат  
+4. Для каждой строки ОЭ найдите ОР через поиск  
+5. Сохраните результат кнопками **Excel** или **JSON**
 
-Примеры файлов: [`sample-data/oe_sample.xlsx`](sample-data/oe_sample.xlsx), [`sample-data/or_sample.xlsx`](sample-data/or_sample.xlsx)
+Примеры: [`sample-data/oe_sample.xlsx`](sample-data/oe_sample.xlsx), [`sample-data/or_sample.xlsx`](sample-data/or_sample.xlsx)
 
-## Запуск на своём компьютере
-
-Дважды щёлкните `start.sh` (Linux/macOS) или выполните:
+## Запуск на компьютере
 
 ```bash
 ./start.sh
 ```
 
-Скрипт сам установит зависимости и откроет приложение по адресу http://localhost:4173
+Windows: `start.bat` → откроется http://localhost:4173
 
 ## Возможности
 
-- Загрузка двух Excel-таблиц ОЭ и ОР  
+- Загрузка Excel ОЭ и ОР  
 - Поиск ОР по коду и наименованию  
-- Фильтры: все / без пары / сопоставленные  
-- Проверка дубликатов сопоставлений  
-- Экспорт в Excel и JSON (4 столбца)  
+- Фильтры и проверка дубликатов  
+- Экспорт в Excel / JSON (4 столбца)  
 - Автосохранение прогресса в браузере  
