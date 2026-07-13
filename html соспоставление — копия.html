@@ -29,8 +29,8 @@ h1{margin:0;font-size:clamp(1.7rem,3vw,2.4rem);font-weight:800;letter-spacing:-.
 .banner{display:flex;justify-content:space-between;gap:1rem;margin-bottom:1rem;padding:.8rem 1rem;border-radius:12px;border:1px solid var(--line)}
 .banner.ok{background:rgba(77,182,138,.14);border-color:rgba(77,182,138,.35)}
 .banner.err{background:rgba(227,107,91,.14);border-color:rgba(227,107,91,.4)}
-.uploads{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-bottom:1rem}
-@media(max-width:800px){.uploads{grid-template-columns:1fr}}
+.uploads{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-bottom:1rem}
+@media(max-width:1100px){.uploads{grid-template-columns:1fr}}
 .file{display:grid;gap:.4rem;padding:1.1rem;border:1px dashed var(--line2);border-radius:14px;background:rgba(255,252,247,.04);cursor:pointer}
 .file:hover{border-color:var(--accent);background:rgba(47,158,135,.08)}
 .file input{display:none}
@@ -102,7 +102,6 @@ code{font-family:var(--mono);font-size:.92em;padding:.15rem .4rem;border-radius:
       <button class="btn btn-ghost" id="btnLoadJson" type="button">Загрузить JSON</button>
       <button class="btn" id="btnJson" type="button" disabled>Сохранить JSON</button>
       <button class="btn btn-primary" id="btnExcel" type="button" disabled>Excel</button>
-      <input type="file" id="jsonFile" accept=".json,application/json" hidden />
     </div>
   </header>
   <div id="banner" class="banner" style="display:none"><span id="bannerText"></span><button class="btn btn-ghost" id="bannerClose" type="button">×</button></div>
@@ -120,6 +119,13 @@ code{font-family:var(--mono);font-size:.92em;padding:.15rem .4rem;border-radius:
       <span class="pick">Выбрать Excel</span>
       <span class="fname" id="orName"></span>
       <input type="file" id="orFile" accept=".xlsx,.xls,.csv" />
+    </label>
+    <label class="file file-json">
+      <div class="file-top"><span>Сохранённые сопоставления (JSON)</span><span class="count" id="jsonCount">—</span></div>
+      <span class="hint">Ранее экспортированный JSON или полное состояние</span>
+      <span class="pick">Загрузить JSON</span>
+      <span class="fname" id="jsonName"></span>
+      <input type="file" id="jsonFile" accept=".json,application/json" />
     </label>
   </section>
   <section class="stats">
@@ -264,6 +270,8 @@ function importJson(text){
     state.oe=data.oe; state.or=data.or; state.map=data.map;
     state.oeFile=data.oeFile||''; state.orFile=data.orFile||'';
     save(); render();
+    document.getElementById('jsonName').textContent='загружено';
+    document.getElementById('jsonCount').textContent=Object.keys(state.map).length;
     toast('JSON: загружены каталоги и '+Object.keys(state.map).length+' сопоставлений');
     return;
   }
@@ -285,6 +293,8 @@ function importJson(text){
   }
   state.map=next;
   save(); render();
+  document.getElementById('jsonName').textContent='применено '+applied;
+  document.getElementById('jsonCount').textContent=applied;
   toast('JSON: применено '+applied+' сопоставлений'+(skipped?', пропущено '+skipped:''));
 }
 
@@ -416,7 +426,7 @@ document.getElementById('btnClear').onclick=()=>{if(!confirm('Очистить �
 document.getElementById('btnExcel').onclick=()=>{const maps=mappings(); const issues=issuesOf(maps); if(issues.length&&!confirm('Найдено проблем: '+issues.length+'. Всё равно экспортировать?'))return; exportExcel(maps); toast('Excel: '+maps.length+' строк');};
 document.getElementById('btnJson').onclick=()=>{const maps=mappings(); const issues=issuesOf(maps); if(issues.length&&!confirm('Найдено проблем: '+issues.length+'. Всё равно экспортировать?'))return; exportJson(maps); toast('JSON: '+maps.length+' записей');};
 document.getElementById('btnLoadJson').onclick=()=>document.getElementById('jsonFile').click();
-document.getElementById('jsonFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>importJson(String(r.result||'')); r.onerror=()=>toast('Ошибка чтения файла «'+f.name+'».',true); r.readAsText(f,'utf-8'); e.target.value='';});
+document.getElementById('jsonFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0]; if(!f)return; document.getElementById('jsonName').textContent=f.name; const r=new FileReader(); r.onload=()=>importJson(String(r.result||'')); r.onerror=()=>toast('Ошибка чтения файла «'+f.name+'».',true); r.readAsText(f,'utf-8'); e.target.value='';});
 document.getElementById('bannerClose').onclick=()=>{document.getElementById('banner').style.display='none';};
 document.getElementById('oeFilter').oninput=e=>{state.query=e.target.value; render();};
 document.querySelectorAll('.chip').forEach(btn=>btn.onclick=()=>{state.filter=btn.dataset.filter; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===btn)); render();});

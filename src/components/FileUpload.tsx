@@ -3,6 +3,8 @@ interface FileUploadProps {
   hint: string
   count: number
   accept?: string
+  buttonText?: string
+  countLabel?: string
   onFile: (file: File) => void
   loadedName?: string
 }
@@ -12,18 +14,25 @@ export function FileUpload({
   hint,
   count,
   accept = '.xlsx,.xls,.csv',
+  buttonText,
+  countLabel,
   onFile,
   loadedName,
 }: FileUploadProps) {
+  const displayCount =
+    countLabel ?? (count > 0 ? String(count) : undefined)
+
   return (
     <label className="file-upload">
       <div className="file-upload__top">
         <span className="file-upload__label">{label}</span>
-        {count > 0 && <span className="file-upload__count">{count}</span>}
+        {displayCount !== undefined && (
+          <span className="file-upload__count">{displayCount}</span>
+        )}
       </div>
       <span className="file-upload__hint">{hint}</span>
       <span className="file-upload__button">
-        {loadedName ? 'Заменить файл' : 'Выбрать Excel'}
+        {loadedName ? 'Заменить файл' : (buttonText ?? 'Выбрать Excel')}
       </span>
       {loadedName && <span className="file-upload__file">{loadedName}</span>}
       <input

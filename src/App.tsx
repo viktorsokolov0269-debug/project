@@ -43,6 +43,8 @@ export default function App() {
   const [orFileName, setOrFileName] = useState(persisted?.orFileName ?? '')
   const [oeQuery, setOeQuery] = useState('')
   const [filter, setFilter] = useState<MatchFilter>('all')
+  const [jsonFileName, setJsonFileName] = useState('')
+  const [jsonApplied, setJsonApplied] = useState(0)
   const [toast, setToast] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [, startTransition] = useTransition()
@@ -218,6 +220,8 @@ export default function App() {
         setToast(
           `JSON: загружены каталоги и ${Object.keys(parsed.map as object).length} сопоставлений`,
         )
+        setJsonFileName(file.name)
+        setJsonApplied(Object.keys(parsed.map as object).length)
         return
       }
 
@@ -232,6 +236,8 @@ export default function App() {
         orItems,
       )
       setMatchMap(next)
+      setJsonFileName(file.name)
+      setJsonApplied(applied)
       setToast(
         `JSON: применено ${applied} сопоставлений${skipped ? `, пропущено ${skipped}` : ''}`,
       )
@@ -348,6 +354,16 @@ export default function App() {
           count={orItems.length}
           loadedName={orFileName}
           onFile={(f) => void readExcel(f, 'or')}
+        />
+        <FileUpload
+          label="Сохранённые сопоставления (JSON)"
+          hint="Ранее экспортированный JSON или полное состояние"
+          count={jsonApplied}
+          countLabel={jsonApplied > 0 ? String(jsonApplied) : '—'}
+          accept=".json,application/json"
+          buttonText="Загрузить JSON"
+          loadedName={jsonFileName}
+          onFile={(f) => void handleImportJson(f)}
         />
       </section>
 
