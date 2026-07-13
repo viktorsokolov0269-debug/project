@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg-0: #0f1c24;
+  --bg-1: #152833;
+  --bg-2: #1c3442;
+  --bg-3: #234052;
+  --surface: rgba(255, 252, 247, 0.04);
+  --surface-strong: rgba(255, 252, 247, 0.08);
+  --line: rgba(214, 232, 228, 0.14);
+  --line-strong: rgba(214, 232, 228, 0.28);
+  --text: #f4f7f5;
+  --text-muted: #9db3ad;
+  --accent: #2f9e87;
+  --accent-2: #f0b429;
+  --danger: #e36b5b;
+  --ok: #4db68a;
+  --warn: #e0a045;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+  --radius: 14px;
+  --font: 'Manrope', 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--text);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(47, 158, 135, 0.22), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, rgba(240, 180, 41, 0.12), transparent 50%),
+    linear-gradient(165deg, var(--bg-0), var(--bg-1) 45%, #122029);
+  background-attachment: fixed;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+}
