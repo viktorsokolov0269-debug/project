@@ -39,9 +39,8 @@ export function SearchableSelect({
   )
 
   const filtered = useMemo(() => {
-    const base = filterItems(items, query).slice(0, 80)
-    return base
-  }, [items, query])
+    return filterItems(items, query, usedCodes, value || undefined).slice(0, 80)
+  }, [items, query, usedCodes, value])
 
   useEffect(() => {
     if (!open) return
@@ -152,28 +151,22 @@ export function SearchableSelect({
           {filtered.length === 0 && (
             <li className="search-select__empty">Ничего не найдено</li>
           )}
-          {filtered.map((item, idx) => {
-            const usedElsewhere = usedCodes.has(item.code.toLowerCase()) && item.code !== value
-            return (
+          {filtered.map((item, idx) => (
               <li key={item.code}>
                 <button
                   type="button"
                   role="option"
                   aria-selected={item.code === value}
-                  className={`search-select__option ${idx === highlight ? 'is-active' : ''} ${usedElsewhere ? 'is-used' : ''}`}
+                  className={`search-select__option ${idx === highlight ? 'is-active' : ''}`}
                   onMouseEnter={() => setHighlight(idx)}
                   onClick={() => pick(item.code)}
                 >
                   <span className="search-select__code">{item.code}</span>
                   <span className="search-select__name">{item.name}</span>
-                  {usedElsewhere && (
-                    <span className="search-select__badge">уже сопоставлен</span>
-                  )}
                 </button>
               </li>
-            )
-          })}
-          {filterItems(items, query).length > 80 && (
+            ))}
+          {filterItems(items, query, usedCodes, value || undefined).length > 80 && (
             <li className="search-select__hint">
               Показаны первые 80 — уточните запрос
             </li>

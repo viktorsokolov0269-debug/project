@@ -6,6 +6,7 @@ import {
   buildMappings,
   exportMappingsToExcel,
   exportMappingsToJson,
+  importMappingsFromJson,
   parseCatalogFromWorkbook,
   validateMappings,
 } from './utils/excel'
@@ -202,6 +203,43 @@ export default function App() {
     setToast(`Excel: ${mappings.length} строк`)
   }
 
+  const handleImportJson = async (file: File) => {
+    setError(null)
+    try {
+      const text = await file.text()
+      const parsed = JSON.parse(text) as Record<string, unknown>
+
+      if (parsed.oe && parsed.or && parsed.map) {
+        setOeItems(parsed.oe as CatalogItem[])
+        setOrItems(parsed.or as CatalogItem[])
+        setMatchMap(parsed.map as Record<string, string>)
+        setOeFileName(String(parsed.oeFileName ?? parsed.oeFile ?? ''))
+        setOrFileName(String(parsed.orFileName ?? parsed.orFile ?? ''))
+        setToast(
+          `JSON: загружены каталоги и ${Object.keys(parsed.map as object).length} сопоставлений`,
+        )
+        return
+      }
+
+      if (oeItems.length === 0 || orItems.length === 0) {
+        setError('Сначала загрузите таблицы ОЭ и ОР, затем JSON с сопоставлениями.')
+        return
+      }
+
+      const { matchMap: next, applied, skipped } = importMappingsFromJson(
+        text,
+        oeItems,
+        orItems,
+      )
+      setMatchMap(next)
+      setToast(
+        `JSON: применено ${applied} сопоставлений${skipped ? `, пропущено ${skipped}` : ''}`,
+      )
+    } catch {
+      setError(`Ошибка чтения JSON «${file.name}».`)
+    }
+  }
+
   const handleExportJson = () => {
     if (mappings.length === 0) {
       setError('Нет сопоставлений для экспорта')
@@ -245,11 +283,29 @@ export default function App() {
           </button>
           <button
             type="button"
+            className="btn btn--ghost"
+            onClick={() => document.getElementById('json-import')?.click()}
+          >
+            Загрузить JSON
+          </button>
+          <input
+            id="json-import"
+            type="file"
+            accept=".json,application/json"
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) void handleImportJson(file)
+              e.target.value = ''
+            }}
+          />
+          <button
+            type="button"
             className="btn btn--secondary"
             onClick={handleExportJson}
             disabled={mappings.length === 0}
           >
-            JSON
+            Сохранить JSON
           </button>
           <button
             type="button"
@@ -378,11 +434,19 @@ export default function App() {
           <div className="table-wrap">
             <table className="match-table">
               <thead>
-                <tr>
+                <tr className="match-table__group-row">
+                  <th className="match-table__group-oe" colSpan={3}>
+                    Объект эксплуатации (ОЭ)
+                  </th>
+                  <th className="match-table__group-or" colSpan={2}>
+                    Объект ремонта (ОР)
+                  </th>
+                </tr>
+                <tr className="match-table__subhead">
                   <th className="col-num">№</th>
-                  <th className="col-code">Код ОЭ</th>
-                  <th className="col-name">Наименование ОЭ</th>
-                  <th className="col-or">Объект ремонта (ОР)</th>
+                  <th className="col-code">Код</th>
+                  <th className="col-name">Наименование</th>
+                  <th className="col-or">Сопоставление</th>
                   <th className="col-status">Статус</th>
                 </tr>
               </thead>

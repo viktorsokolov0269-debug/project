@@ -16,7 +16,7 @@ body{margin:0;font-family:var(--font);color:var(--text);background:
   radial-gradient(1200px 600px at 10% -10%,rgba(47,158,135,.22),transparent 55%),
   radial-gradient(900px 500px at 100% 0%,rgba(240,180,41,.12),transparent 50%),
   linear-gradient(165deg,var(--bg0),var(--bg1) 45%,#122029);min-height:100vh}
-.app{width:min(1280px,calc(100% - 2rem));margin:0 auto;padding:1.75rem 0 3rem}
+.app{width:calc(100% - 1.5rem);max-width:none;margin:0 auto;padding:1.75rem .75rem 3rem}
 h1{margin:0;font-size:clamp(1.7rem,3vw,2.4rem);font-weight:800;letter-spacing:-.03em}
 .eyebrow{margin:0 0 .35rem;color:var(--accent);font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
 .sub{margin:.65rem 0 0;color:var(--muted);max-width:42rem;line-height:1.5}
@@ -53,10 +53,20 @@ h1{margin:0;font-size:clamp(1.7rem,3vw,2.4rem);font-weight:800;letter-spacing:-.
 .toolbar input[type=search]{flex:1 1 220px;min-width:180px;padding:.65rem .9rem;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--text);outline:none;font:inherit}
 .chip{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:.45rem .8rem;cursor:pointer;font:inherit}
 .chip.on{background:rgba(47,158,135,.18);border-color:rgba(47,158,135,.55);color:#d8fff4}
-.table-wrap{overflow:auto;max-height:min(70vh,820px)}
-table{width:100%;border-collapse:collapse;min-width:920px}
+.table-wrap{overflow:auto;max-height:min(75vh,900px)}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
 th,td{padding:.7rem .85rem;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
 th{position:sticky;top:0;background:#163040;color:#c5d8d1;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase}
+thead tr.group-row th{top:0;z-index:3;font-size:.72rem;padding:.55rem .85rem;background:#1a3a4a;color:#9fe4d2}
+thead tr.subhead th{top:2.1rem;z-index:2}
+th.group-oe{width:50%;border-right:2px solid rgba(47,158,135,.55)}
+th.group-or{width:50%}
+.col-num{width:4%}
+.col-code-oe{width:14%}
+.col-name-oe{width:32%;border-right:2px solid rgba(47,158,135,.35)}
+.col-or{width:42%}
+.col-status{width:8%}
+.oe-name{word-break:break-word}
 tr.matched{background:rgba(77,182,138,.05)}
 tr.dup{background:rgba(224,160,69,.1)}
 code{font-family:var(--mono);font-size:.92em;padding:.15rem .4rem;border-radius:6px;background:rgba(255,255,255,.05)}
@@ -84,13 +94,15 @@ code{font-family:var(--mono);font-size:.92em;padding:.15rem .4rem;border-radius:
     <div>
       <p class="eyebrow">1С ERP × 1С ТОИР</p>
       <h1>Сопоставление ОЭ и ОР</h1>
-      <p class="sub">Загрузите две таблицы Excel, сопоставьте объекты и сохраните результат в Excel или JSON.</p>
+      <p class="sub">Загрузите две таблицы Excel, сопоставьте объекты, сохраните или загрузите ранее сохранённый JSON.</p>
     </div>
     <div class="actions">
       <button class="btn btn-ghost" id="btnReset" type="button">Сбросить</button>
       <button class="btn btn-ghost" id="btnClear" type="button">Очистить сопоставления</button>
-      <button class="btn" id="btnJson" type="button" disabled>JSON</button>
+      <button class="btn btn-ghost" id="btnLoadJson" type="button">Загрузить JSON</button>
+      <button class="btn" id="btnJson" type="button" disabled>Сохранить JSON</button>
       <button class="btn btn-primary" id="btnExcel" type="button" disabled>Excel</button>
+      <input type="file" id="jsonFile" accept=".json,application/json" hidden />
     </div>
   </header>
   <div id="banner" class="banner" style="display:none"><span id="bannerText"></span><button class="btn btn-ghost" id="bannerClose" type="button">×</button></div>
@@ -132,7 +144,19 @@ code{font-family:var(--mono);font-size:.92em;padding:.15rem .4rem;border-radius:
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>№</th><th>Код ОЭ</th><th>Наименование ОЭ</th><th>Объект ремонта (ОР)</th><th>Статус</th></tr></thead>
+        <thead>
+          <tr class="group-row">
+            <th class="group-oe" colspan="3">Объект эксплуатации (ОЭ)</th>
+            <th class="group-or" colspan="2">Объект ремонта (ОР)</th>
+          </tr>
+          <tr class="subhead">
+            <th class="col-num">№</th>
+            <th class="col-code-oe">Код</th>
+            <th class="col-name-oe">Наименование</th>
+            <th class="col-or">Сопоставление</th>
+            <th class="col-status">Статус</th>
+          </tr>
+        </thead>
         <tbody id="tbody"></tbody>
       </table>
     </div>
@@ -233,9 +257,42 @@ function exportJson(maps){
   downloadBlob(new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'}),'sopostavlenie_oe_or_'+stamp()+'.json');
 }
 
-function filterOr(q){
-  const s=q.trim().toLowerCase(); if(!s) return state.or.slice(0,80);
-  return state.or.filter(i=>i.code.toLowerCase().includes(s)||i.name.toLowerCase().includes(s)).slice(0,80);
+function importJson(text){
+  let data;
+  try{ data=JSON.parse(text); }catch(e){ toast('Ошибка чтения JSON: неверный формат',true); return; }
+  if(data.oe&&data.or&&data.map){
+    state.oe=data.oe; state.or=data.or; state.map=data.map;
+    state.oeFile=data.oeFile||''; state.orFile=data.orFile||'';
+    save(); render();
+    toast('JSON: загружены каталоги и '+Object.keys(state.map).length+' сопоставлений');
+    return;
+  }
+  const mappings=data.mappings||data.map||(Array.isArray(data)?data:null);
+  if(!mappings||!Array.isArray(mappings)){ toast('Неверный формат JSON. Ожидается массив mappings или полное состояние.',true); return; }
+  if(!state.oe.length||!state.or.length){ toast('Сначала загрузите таблицы ОЭ и ОР, затем JSON с сопоставлениями.',true); return; }
+  const oeSet=new Set(state.oe.map(o=>o.code.toLowerCase()));
+  const orSet=new Set(state.or.map(o=>o.code.toLowerCase()));
+  const next={};
+  let applied=0, skipped=0;
+  for(const m of mappings){
+    const oeCode=m.oe_code||m.oeCode||m['Код ОЭ']||'';
+    const orCode=m.or_code||m.orCode||m['Код ОР']||'';
+    if(!oeCode||!orCode){ skipped++; continue; }
+    if(oeSet.has(String(oeCode).toLowerCase())&&orSet.has(String(orCode).toLowerCase())){
+      const oe=state.oe.find(o=>o.code.toLowerCase()===String(oeCode).toLowerCase());
+      if(oe){ next[oe.code]=state.or.find(o=>o.code.toLowerCase()===String(orCode).toLowerCase()).code; applied++; }
+    } else skipped++;
+  }
+  state.map=next;
+  save(); render();
+  toast('JSON: применено '+applied+' сопоставлений'+(skipped?', пропущено '+skipped:''));
+}
+
+function filterOr(q, used, currentVal){
+  const s=q.trim().toLowerCase();
+  let items=s?state.or.filter(i=>i.code.toLowerCase().includes(s)||i.name.toLowerCase().includes(s)):state.or;
+  items=items.filter(i=>!used.has(i.code.toLowerCase())||i.code===currentVal);
+  return items.slice(0,80);
 }
 
 function visibleOe(){
@@ -261,18 +318,21 @@ function renderSelect(td, oe, used, dups){
     closeSelects(wrap); wrap.classList.add('open');
     let list=wrap.querySelector('.list'); if(list) list.remove();
     list=document.createElement('ul'); list.className='list';
-    const items=filterOr(query);
+    const items=filterOr(query, used, val);
     if(!items.length){const li=document.createElement('li'); li.className='empty'; li.textContent='Ничего не найдено'; list.appendChild(li);}
     items.forEach((item,idx)=>{
       const li=document.createElement('li');
       const btn=document.createElement('button'); btn.type='button'; btn.className='opt'+(idx===0?' active':'');
-      const usedElse=used.has(item.code.toLowerCase())&&item.code!==val;
-      btn.innerHTML='<span class="code"></span><span class="name"></span>'+(usedElse?'<span class="badge">уже сопоставлен</span>':'');
+      btn.innerHTML='<span class="code"></span><span class="name"></span>';
       btn.querySelector('.code').textContent=item.code; btn.querySelector('.name').textContent=item.name;
       btn.onclick=()=>{state.map[oe.code]=item.code; save(); render();};
       li.appendChild(btn); list.appendChild(li);
     });
-    const more=state.or.filter(i=>{const s=query.trim().toLowerCase(); return !s||i.code.toLowerCase().includes(s)||i.name.toLowerCase().includes(s);}).length;
+    const more=state.or.filter(i=>{
+      const s=query.trim().toLowerCase();
+      const match=!s||i.code.toLowerCase().includes(s)||i.name.toLowerCase().includes(s);
+      return match&&(!used.has(i.code.toLowerCase())||i.code===val);
+    }).length;
     if(more>80){const li=document.createElement('li'); li.className='hint'; li.textContent='Показаны первые 80 — уточните запрос'; list.appendChild(li);}
     wrap.appendChild(list);
   }
@@ -355,6 +415,8 @@ document.getElementById('btnReset').onclick=()=>{if(!confirm('Сбросить �
 document.getElementById('btnClear').onclick=()=>{if(!confirm('Очистить все сопоставления?'))return; state.map={}; save(); toast('Сопоставления очищены'); render();};
 document.getElementById('btnExcel').onclick=()=>{const maps=mappings(); const issues=issuesOf(maps); if(issues.length&&!confirm('Найдено проблем: '+issues.length+'. Всё равно экспортировать?'))return; exportExcel(maps); toast('Excel: '+maps.length+' строк');};
 document.getElementById('btnJson').onclick=()=>{const maps=mappings(); const issues=issuesOf(maps); if(issues.length&&!confirm('Найдено проблем: '+issues.length+'. Всё равно экспортировать?'))return; exportJson(maps); toast('JSON: '+maps.length+' записей');};
+document.getElementById('btnLoadJson').onclick=()=>document.getElementById('jsonFile').click();
+document.getElementById('jsonFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>importJson(String(r.result||'')); r.onerror=()=>toast('Ошибка чтения файла «'+f.name+'».',true); r.readAsText(f,'utf-8'); e.target.value='';});
 document.getElementById('bannerClose').onclick=()=>{document.getElementById('banner').style.display='none';};
 document.getElementById('oeFilter').oninput=e=>{state.query=e.target.value; render();};
 document.querySelectorAll('.chip').forEach(btn=>btn.onclick=()=>{state.filter=btn.dataset.filter; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===btn)); render();});

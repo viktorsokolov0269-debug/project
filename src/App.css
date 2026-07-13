@@ -1,8 +1,9 @@
 .app {
   position: relative;
-  width: min(1280px, calc(100% - 2rem));
+  width: calc(100% - 1.5rem);
+  max-width: none;
   margin: 0 auto;
-  padding: 1.75rem 0 3rem;
+  padding: 1.75rem 0.75rem 3rem;
 }
 
 .app__glow {
@@ -332,13 +333,13 @@
 
 .table-wrap {
   overflow: auto;
-  max-height: min(70vh, 820px);
+  max-height: min(75vh, 900px);
 }
 
 .match-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 920px;
+  table-layout: fixed;
 }
 
 .match-table th,
@@ -349,10 +350,31 @@
   vertical-align: middle;
 }
 
+.match-table__group-row th {
+  top: 0;
+  z-index: 3;
+  font-size: 0.72rem;
+  padding: 0.55rem 0.85rem;
+  background: #1a3a4a;
+  color: #9fe4d2;
+}
+
+.match-table__subhead th {
+  top: 2.1rem;
+  z-index: 2;
+}
+
+.match-table__group-oe {
+  width: 50%;
+  border-right: 2px solid rgba(47, 158, 135, 0.55);
+}
+
+.match-table__group-or {
+  width: 50%;
+}
+
 .match-table th {
   position: sticky;
-  top: 0;
-  z-index: 2;
   background: #163040;
   color: #c5d8d1;
   font-size: 0.78rem;
@@ -373,14 +395,14 @@
 }
 
 .col-num {
-  width: 3.2rem;
+  width: 4%;
   color: var(--text-muted);
   font-family: var(--mono);
   font-size: 0.85rem;
 }
 
 .col-code {
-  width: 9rem;
+  width: 14%;
 }
 
 .col-code code {
@@ -390,15 +412,17 @@
 }
 
 .col-name {
-  width: 28%;
+  width: 32%;
+  border-right: 2px solid rgba(47, 158, 135, 0.35);
+  word-break: break-word;
 }
 
 .col-or {
-  min-width: 320px;
+  width: 42%;
 }
 
 .col-status {
-  width: 8rem;
+  width: 8%;
 }
 
 .status {

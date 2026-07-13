@@ -205,11 +205,66 @@ export function exportMappingsToJson(mappings: Mapping[], filename: string) {
   saveAs(blob, filename)
 }
 
-export function filterItems(items: CatalogItem[], query: string): CatalogItem[] {
+export function importMappingsFromJson(
+  text: string,
+  oeItems: CatalogItem[],
+  orItems: CatalogItem[],
+): { matchMap: Record<string, string>; applied: number; skipped: number } {
+  const data = JSON.parse(text) as Record<string, unknown>
+  const mappings =
+    (data.mappings as Record<string, string>[] | undefined) ??
+    (data.map as Record<string, string>[] | undefined) ??
+    (Array.isArray(data) ? (data as Record<string, string>[]) : null)
+
+  if (!mappings || !Array.isArray(mappings)) {
+    throw new Error('invalid_format')
+  }
+
+  const oeSet = new Set(oeItems.map((o) => o.code.toLowerCase()))
+  const orByCode = new Map(orItems.map((o) => [o.code.toLowerCase(), o]))
+  const next: Record<string, string> = {}
+  let applied = 0
+  let skipped = 0
+
+  for (const m of mappings) {
+    const oeCode = String(m.oe_code ?? m.oeCode ?? m['Код ОЭ'] ?? '').trim()
+    const orCode = String(m.or_code ?? m.orCode ?? m['Код ОР'] ?? '').trim()
+    if (!oeCode || !orCode) {
+      skipped++
+      continue
+    }
+    const oe = oeItems.find((o) => o.code.toLowerCase() === oeCode.toLowerCase())
+    const or = orByCode.get(orCode.toLowerCase())
+    if (oe && or && oeSet.has(oe.code.toLowerCase())) {
+      next[oe.code] = or.code
+      applied++
+    } else {
+      skipped++
+    }
+  }
+
+  return { matchMap: next, applied, skipped }
+}
+
+export function filterItems(
+  items: CatalogItem[],
+  query: string,
+  usedCodes?: Set<string>,
+  currentValue?: string,
+): CatalogItem[] {
   const q = query.trim().toLowerCase()
-  if (!q) return items
-  return items.filter(
-    (item) =>
-      item.code.toLowerCase().includes(q) || item.name.toLowerCase().includes(q),
-  )
+  let result = !q
+    ? items
+    : items.filter(
+        (item) =>
+          item.code.toLowerCase().includes(q) ||
+          item.name.toLowerCase().includes(q),
+      )
+  if (usedCodes) {
+    result = result.filter(
+      (item) =>
+        !usedCodes.has(item.code.toLowerCase()) || item.code === currentValue,
+    )
+  }
+  return result
 }
